@@ -21,6 +21,113 @@ bool BigInteger::is_positive() const
     return !negative && number != "0" && !number.empty();
 }
 
+std::string add(const std::string& a, const std::string& b) 
+{
+    std::string result;
+    int i = a.length() - 1;
+    int j = b.length() - 1;
+    int carry = 0;
+    while (i >= 0 || j >= 0 || carry) 
+    {
+        int digit1 = (i >= 0) ? a[i--] - '0' : 0;
+        int digit2 = (j >= 0) ? b[j--] - '0' : 0;
+        int sum = digit1 + digit2 + carry;
+        result.push_back((sum % 10) + '0');
+        carry = sum / 10;
+    }
+    std::reverse(result.begin(), result.end());
+    return result;
+}
+
+std::string subtract(const std::string& a, const std::string& b) 
+{
+    std::vector<int> result(a.length());
+    
+    // Convert strings to digits
+    for (unsigned int i = 0; i < a.length(); i++) 
+    {
+        result[i] = a[i] - '0';
+    }
+    
+    // Perform subtraction
+    for (unsigned int i = 0; i < b.length(); i++) 
+    {
+        int idx = a.length() - 1 - i;
+        int digit2 = b[b.length() - 1 - i] - '0';
+        
+        if (result[idx] < digit2) {
+            // Need to borrow
+            int j = idx - 1;
+            while (j >= 0 && result[j] == 0)
+            {
+                result[j] = 9;
+                j--;
+            }
+            if (j >= 0) 
+            {
+                result[j]--;
+            }
+            result[idx] += 10;
+        }
+        result[idx] -= digit2;
+    }
+    
+    // Convert back to string, removing leading zeros
+    std::string final;
+    bool leadingZeros = true;
+    for (int digit : result) 
+    {
+        if (digit != 0) leadingZeros = false;
+        if (!leadingZeros || final.length() > 0) 
+        {
+            final += digit + '0';
+        }
+    }
+    
+    return final.empty() ? "0" : final;
+}
+
+std::string multiply(const std::string& a, const std::string& b) 
+{
+    std::vector<int> result(a.length() + b.length(), 0);
+    
+    // Multiply each digit
+    for (int i = a.length() - 1; i >= 0; i--) 
+    {
+        for (int j = b.length() - 1; j >= 0; j--) 
+        {
+            int digit1 = a[i] - '0';
+            int digit2 = b[j] - '0';
+            
+            // Add to existing value at position
+            int pos1 = i + j;
+            int pos2 = i + j + 1;
+            int product = digit1 * digit2 + result[pos2];
+            
+            result[pos2] = product % 10;
+            result[pos1] += product / 10;
+        }
+    }
+    
+    // Convert to string, removing leading zeros
+    std::string multiply_result;
+    bool leadingZeros = true;
+    
+    for (int digit : result) 
+    {
+        if (digit != 0) 
+        {
+            leadingZeros = false;
+        }
+        if (!leadingZeros) 
+        {
+            multiply_result += (digit + '0');
+        }
+    }
+    
+    return multiply_result.empty() ? "0" : multiply_result;
+}
+
 BigInteger::BigInteger() 
     : number(), negative(false)
 {
@@ -92,32 +199,76 @@ BigInteger BigInteger::operator-() const
 
 BigInteger BigInteger::operator+(const BigInteger& other) const 
 {
-    std::string result;
-    int i = number.length() - 1;
-    int j = other.number.length() - 1;
-    int carry = 0;
-    while (i >= 0 || j >= 0 || carry) 
+    if (number.empty() || other.number.empty()) 
     {
-        int digit1 = (i >= 0) ? number[i--] - '0' : 0;
-        int digit2 = (j >= 0) ? other.number[j--] - '0' : 0;
-        int sum = digit1 + digit2 + carry;
-        result.push_back((sum % 10) + '0');
-        carry = sum / 10;
+        throw std::invalid_argument("Cannot add uninitialized BigInteger");
     }
-    std::reverse(result.begin(), result.end());
-    return BigInteger(result);
+    if (!negative && !other.negative) 
+    {
+        // Both positive
+        return BigInteger(add(number, other.number));
+    } 
+    else if (negative && other.negative) 
+    {
+        // Both negative
+        BigInteger result(add(number, other.number));
+        result.negative = true;
+        return result;
+    } 
+    else if (negative && !other.negative) 
+    {
+        // This is negative, other is positive
+        if (-*this < other)
+        {
+            return BigInteger(subtract(other.number, number));
+        }
+        else if (*this == -other)
+        {
+            return BigInteger("0");
+        }
+        else 
+        {
+            BigInteger result(subtract(number, other.number));
+            result.negative = true;
+            return result;
+        }
+    } 
+    else 
+    {
+        // This is positive, other is negative
+        if (*this < -other) 
+        {
+            BigInteger result(subtract(other.number, number));
+            result.negative = true;
+            return result;
+        } 
+        else if (*this == -other) 
+        {
+            return BigInteger("0");
+        } 
+        else 
+        {
+            return BigInteger(subtract(number, other.number));
+        }
+    }
+    throw std::invalid_argument("Invalid BigInteger state for addition");
 }
 
 BigInteger BigInteger::operator-(const BigInteger& other) const 
 {
-    // Implement subtraction logic here
-    return BigInteger(); // Placeholder
+    return *this + -other;
 }
 
 BigInteger BigInteger::operator*(const BigInteger& other) const 
 {
-    // Implement multiplication logic here
-    return BigInteger(); // Placeholder
+    BigInteger result(multiply(number, other.number));
+    if ((is_positive() && other.is_positive()) || 
+        (is_negative() && other.is_negative()))
+    {
+        return result;
+    }
+    result.negative = true;
+    return result;
 }
 
 BigInteger BigInteger::operator/(const BigInteger& other) const 
@@ -181,4 +332,6 @@ std::ostream& operator<<(std::ostream& os, const BigInteger& bigInt)
     os << bigInt.number;
     return os;
 }
+
+
 

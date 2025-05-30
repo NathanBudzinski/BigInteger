@@ -79,10 +79,8 @@ class BigInteger
 
         friend std::ostream& operator<<(std::ostream& os, const BigInteger& bigInt);
 
-        friend std::string add_pos(const std::string& a, const std::string& b);
-        friend std::string add_neg(const std::string& a, const std::string& b);
-        friend std::string subtract_pos(const std::string& a, const std::string& b);
-        friend std::string subtract_neg(const std::string& a, const std::string& b);
+        friend std::string add(const std::string& a, const std::string& b);
+        friend std::string subtract(const std::string& a, const std::string& b);
         friend std::string multiply(const std::string& a, const std::string& b);
         friend std::string divide(const std::string& a, const std::string& b);
         friend std::string mod(const std::string& a, const std::string& b);

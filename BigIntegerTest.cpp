@@ -300,6 +300,72 @@ TEST(BigIntegerTest, GreaterThanEqualOperator)
     EXPECT_THROW(a >= uninitBigInt, std::invalid_argument);
 }
 
+TEST(BigIntegerTest, Addition) 
+{
+    BigInteger a("1000780001");
+    BigInteger b("20006500002");
+    BigInteger c = a + b;
+    EXPECT_EQ(c.to_string(), "21007280003");
+    EXPECT_FALSE(c.is_negative());
+
+    BigInteger negb("-20006500002");
+    BigInteger negc = a + negb;
+    EXPECT_EQ(negc.to_string(), "-19005720001");
+    EXPECT_TRUE(negc.is_negative());
+
+    BigInteger negc_alt = negb + a;
+    EXPECT_EQ(negc_alt.to_string(), "-19005720001");
+    EXPECT_TRUE(negc_alt.is_negative());
+
+    BigInteger doubleneg = negb + negb;
+    EXPECT_EQ(doubleneg.to_string(), "-40013000004");
+    EXPECT_TRUE(doubleneg.is_negative());
+
+    BigInteger uninit;
+    EXPECT_THROW(uninit + a, std::invalid_argument);
+    EXPECT_THROW(a + uninit, std::invalid_argument);
+
+    BigInteger zero = a + -a;
+    EXPECT_EQ(zero.to_string(), "0");
+    EXPECT_FALSE(zero.is_negative());
+    EXPECT_FALSE(zero.is_positive());
+}
+
+TEST(BigIntegerTest, Subtraction)
+{
+    BigInteger a("98765432");
+    BigInteger b("11111111");
+    BigInteger c = a - b;
+    EXPECT_EQ(c.to_string(), "87654321");
+    EXPECT_TRUE(c.is_positive());
+
+    BigInteger d = b - a;
+    EXPECT_EQ(d.to_string(), "-87654321");
+    EXPECT_TRUE(d.is_negative());
+
+    BigInteger e = d - d;
+    EXPECT_EQ(e.to_string(), "0");
+    EXPECT_FALSE(e.is_negative());
+    EXPECT_FALSE(e.is_positive());
+}
+
+TEST(BigIntegerTest, Multiply)
+{
+    BigInteger a("132546215");
+    BigInteger b("65452135451");
+    BigInteger c = a * b;
+    EXPECT_EQ(c.to_string(), "8675432817697367965");
+    EXPECT_TRUE(a*b == b*a);
+
+    BigInteger d("-96168451");
+    BigInteger e = d * d;
+    EXPECT_EQ(e.to_string(), "9248370967739401");
+
+    BigInteger f = a * d;
+    EXPECT_EQ(f.to_string(), "-12746764182462965");
+
+    EXPECT_TRUE(a*d == d*a);
+}
 
 int main() 
 {
