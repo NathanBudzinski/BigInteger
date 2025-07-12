@@ -69,6 +69,7 @@ class BigInteger
         BigInteger operator-(const BigInteger& other) const;
         BigInteger operator*(const BigInteger& other) const;
         BigInteger operator/(const BigInteger& other) const;
+        BigInteger operator%(const BigInteger& other) const;
 
         bool operator==(const BigInteger& other) const;
         bool operator!=(const BigInteger& other) const;
@@ -83,5 +84,4 @@ class BigInteger
         friend std::string subtract(const std::string& a, const std::string& b);
         friend std::string multiply(const std::string& a, const std::string& b);
         friend std::string divide(const std::string& a, const std::string& b);
-        friend std::string mod(const std::string& a, const std::string& b);
 };

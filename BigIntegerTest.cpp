@@ -367,6 +367,66 @@ TEST(BigIntegerTest, Multiply)
     EXPECT_TRUE(a*d == d*a);
 }
 
+TEST(BigIntegerTest, Divide)
+{
+    BigInteger a("1000000000");
+    BigInteger b("1000");
+    BigInteger c = a / b;
+    EXPECT_EQ(c.to_string(), "1000000");
+    EXPECT_FALSE(c.is_negative());
+    
+    BigInteger d("12345678901234567890");
+    BigInteger e("1234567890");
+    BigInteger f = d / e;
+    EXPECT_EQ(f.to_string(), "10000000001");
+    EXPECT_FALSE(f.is_negative());
+
+    BigInteger g("-12345678901234567890");
+    BigInteger h = g / e;
+    EXPECT_EQ(h.to_string(), "-10000000001");
+    EXPECT_TRUE(h.is_negative());
+
+    BigInteger zero("0");
+    BigInteger i = zero / a;
+    EXPECT_EQ(i.to_string(), "0");
+
+    BigInteger j = a / a;
+    EXPECT_EQ(j.to_string(), "1");
+
+    BigInteger k = a / -a;
+    EXPECT_EQ(k.to_string(), "-1");
+
+    EXPECT_THROW(a / BigInteger("0"), std::invalid_argument);
+    EXPECT_THROW(BigInteger() / b, std::invalid_argument);
+}
+
+TEST(BigIntegerTest, Modulus)
+{
+    BigInteger a("100");
+    BigInteger b("30");
+    BigInteger temp = a / b;
+    EXPECT_EQ(temp.to_string(), "3");
+    BigInteger c = a % b;
+    EXPECT_EQ(c.to_string(), "10");
+
+    BigInteger d("1234567890");
+    BigInteger e("123456789");
+    BigInteger f = d % e;
+    EXPECT_EQ(f.to_string(), "0");
+    EXPECT_FALSE(f.is_negative());
+
+    BigInteger g("-1234567890");
+    BigInteger h = g % e;
+    EXPECT_EQ(h.to_string(), "0");
+    EXPECT_FALSE(h.is_negative());
+
+    BigInteger zero("0");
+    BigInteger i = zero % a;
+    EXPECT_EQ(i.to_string(), "0");
+
+    EXPECT_THROW(a % zero, std::invalid_argument);
+}
+
 int main() 
 {
     ::testing::InitGoogleTest();

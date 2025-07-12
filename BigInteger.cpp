@@ -128,6 +128,48 @@ std::string multiply(const std::string& a, const std::string& b)
     return multiply_result.empty() ? "0" : multiply_result;
 }
 
+std::string divide(const std::string& a, const std::string& b) 
+{
+    std::string quotient;
+    std::string remainder;
+    unsigned int idx = 0;
+
+    // Process each digit of the dividend
+    while (idx < a.length()) 
+    {
+        // Append next digit to remainder
+        remainder += a[idx];
+        
+        // Remove leading zeros
+        while (remainder.length() > 1 && remainder[0] == '0') 
+        {
+            remainder = remainder.substr(1);
+        }
+
+        // Find how many times divisor goes into current remainder
+        int count = 0;
+        std::string temp = remainder;
+        
+        while (temp.length() > b.length() || (temp.length() == b.length() && temp >= b)) 
+        {
+            temp = subtract(temp, b);
+            count++;
+        }
+
+        quotient += std::to_string(count);
+        remainder = temp;
+        idx++;
+    }
+
+    // Remove leading zeros from result
+    while (quotient.length() > 1 && quotient[0] == '0') 
+    {
+        quotient = quotient.substr(1);
+    }
+
+    return quotient;
+}
+
 BigInteger::BigInteger() 
     : number(), negative(false)
 {
@@ -273,8 +315,64 @@ BigInteger BigInteger::operator*(const BigInteger& other) const
 
 BigInteger BigInteger::operator/(const BigInteger& other) const 
 {
-    // Implement division logic here
-    return BigInteger(); // Placeholder
+    if (number.empty() || other.number.empty()) 
+    {
+        throw std::invalid_argument("Cannot divide uninitialized BigInteger");
+    }
+    if (other.number == "0") 
+    {
+        throw std::invalid_argument("Division by zero is not allowed");
+    }
+    if (number == "0") 
+    {
+        return BigInteger("0");
+    }
+    if (other.number == "1") 
+    {
+        return *this; // Division by 1 returns the same number
+    }
+    if (BigInteger(number) < BigInteger(other.number)) 
+    {
+        return BigInteger("0"); // If this is less than other, result is 0
+    }
+    BigInteger result;
+    if (number == other.number) 
+    {
+        result = "1"; // If they are equal, result is 1
+    }
+    else 
+    {
+        result = BigInteger(divide(number, other.number));
+    }
+    if ((is_positive() && other.is_positive()) || 
+        (is_negative() && other.is_negative()))
+    {
+        return result;
+    }
+    result.negative = true;
+    return result;
+}
+
+BigInteger BigInteger::operator%(const BigInteger& other) const 
+{
+    if (number.empty() || other.number.empty()) 
+    {
+        throw std::invalid_argument("Cannot mod uninitialized BigInteger");
+    }
+    if (other.number == "0") 
+    {
+        throw std::invalid_argument("Modulus by zero is not allowed");
+    }
+    if (number == "0") 
+    {
+        return BigInteger("0");
+    }
+    BigInteger result = *this - (*this / other) * other;
+    if (result.is_negative()) 
+    {
+        result = result + other;
+    }
+    return result;
 }
 
 bool BigInteger::operator==(const BigInteger& other) const 
